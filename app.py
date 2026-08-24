@@ -36,7 +36,7 @@ if uploaded_file is not None:
             dif = int(df_f['Diferencia Carros Retorno'].sum())
             
             # Construir texto para WhatsApp
-            reporte_wsp = f"*REPORTE EJECUTIVO DE OPERACIONES*\n"
+            reporte_wsp = f"*REPORTE DE OPERACIONES PUERTOS BIOBIO*\n"
             reporte_wsp += f"*Fecha:* {fecha_sel}\n\n"
             reporte_wsp += f"📊 *CONSOLIDADO GENERAL*\n"
             reporte_wsp += f"• *Total trenes operados:* {total_trenes} trenes\n"
