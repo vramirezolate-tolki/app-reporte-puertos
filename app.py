@@ -75,7 +75,7 @@ if uploaded_file is not None:
             txt_prom_salida = f"{prom_salida_hrs:.1f} hrs" if pd.notna(prom_salida_hrs) else "N/I"
 
             # --- ARMAR TEXTO PARA WHATSAPP ---
-            reporte = f"*REPORTE EJECUTIVO DE OPERACIONES*\n"
+            reporte = f"*REPORTE DE OPERACIONES PUERTOS BIOBIO*\n"
             reporte += f"*Fecha:* {fecha_sel}\n\n"
             
             reporte += f"📊 *CONSOLIDADO GENERAL*\n"
