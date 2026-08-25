@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# Configuración inicial de la página
+# Configuración de página
 st.set_page_config(
     page_title="Reporte Operacional Puertos Biobío",
     page_icon="🚢",
@@ -17,10 +17,9 @@ uploaded_file = st.file_uploader("Sube el archivo Excel (Resumen descargas)", ty
 
 if uploaded_file is not None:
     try:
-        # Cargar la pestaña base
         df = pd.read_excel(uploaded_file, sheet_name='BD_Puerto')
         
-        # Convertir y dar formato a las fechas
+        # Formatear fechas
         df['Fecha_Descarga_DT'] = pd.to_datetime(df['Fecha descarga'])
         df['Fecha_Str'] = df['Fecha_Descarga_DT'].dt.strftime('%d/%m/%Y')
         fechas_disponibles = df['Fecha_Str'].unique()
@@ -28,7 +27,6 @@ if uploaded_file is not None:
         # 2. Selector de fecha
         fecha_sel = st.selectbox("📅 Selecciona la fecha de operación:", fechas_disponibles)
         
-        # Filtrar el dataframe
         df_f = df[df['Fecha_Str'] == fecha_sel].copy()
         
         if not df_f.empty:
@@ -45,51 +43,67 @@ if uploaded_file is not None:
             retornados = int(df_f['Carros retornos'].sum())
             diferencia = int(df_f['Diferencia Carros Retorno'].sum())
             
-            # Efectividad de descarga
             efectividad_descarga = (descargados / confirmados * 100) if confirmados > 0 else 100.0
             
-            # --- CÁLCULO DE TIEMPOS (PUNTO 1) ---
-            # Conversión de columnas a datetime para cálculo exacto
+            # --- CÁLCULO DE TIEMPOS MÍNIMOS Y MÁXIMOS ---
             df_f['DT_Arribo_Real'] = pd.to_datetime(df_f['Fecha Hora Llegada Real'])
             df_f['DT_Postura'] = pd.to_datetime(df_f['Postura bodega'])
             df_f['DT_Termino'] = pd.to_datetime(df_f['Término descarga'])
             df_f['DT_Retorno_Real'] = pd.to_datetime(df_f['Fecha Hora Retorno Real'])
             
-            # Función para ajustar diferencia de minutos si cruza la medianoche
             def calc_min_diff(end, start):
                 if pd.isna(end) or pd.isna(start):
                     return np.nan
                 diff = (end - start).total_seconds() / 60.0
                 if diff < 0:
-                    diff += 1440.0 # +24 horas si pasa de medianoche
+                    diff += 1440.0
                 return diff
 
             df_f['Min_Postura'] = df_f.apply(lambda r: calc_min_diff(r['DT_Postura'], r['DT_Arribo_Real']), axis=1)
             df_f['Min_Salida'] = df_f.apply(lambda r: calc_min_diff(r['DT_Retorno_Real'], r['DT_Termino']), axis=1)
             
-            prom_postura_min = df_f['Min_Postura'].mean()
-            prom_salida_hrs = (df_f['Min_Salida'].mean() / 60.0) if not df_f['Min_Salida'].isna().all() else 0.0
+            # Mínimo y Máximo de Postura
+            df_postura_val = df_f.dropna(subset=['Min_Postura'])
+            if not df_postura_val.empty:
+                idx_min_pos = df_postura_val['Min_Postura'].idxmin()
+                idx_max_pos = df_postura_val['Min_Postura'].idxmax()
+                
+                postura_min_txt = f"{df_postura_val.loc[idx_min_pos, 'Min_Postura']:.0f} min (Tren {df_postura_val.loc[idx_min_pos, 'Tren planificado']} - {df_postura_val.loc[idx_min_pos, 'Puerto']})"
+                postura_max_txt = f"{df_postura_val.loc[idx_max_pos, 'Min_Postura']:.0f} min (Tren {df_postura_val.loc[idx_max_pos, 'Tren planificado']} - {df_postura_val.loc[idx_max_pos, 'Puerto']})"
+            else:
+                postura_min_txt, postura_max_txt = "N/I", "N/I"
+                
+            # Mínimo y Máximo de Salida (filtrando descalces atípicos > 12 hrs)
+            df_salida_val = df_f.dropna(subset=['Min_Salida'])
+            df_salida_val = df_salida_val[df_salida_val['Min_Salida'] < 720]
             
-            # Formato condicional del promedio de postura
-            txt_prom_postura = f"{prom_postura_min:.0f} min" if pd.notna(prom_postura_min) else "N/I"
-            txt_prom_salida = f"{prom_salida_hrs:.1f} hrs" if pd.notna(prom_salida_hrs) else "N/I"
+            if not df_salida_val.empty:
+                idx_min_sal = df_salida_val['Min_Salida'].idxmin()
+                idx_max_sal = df_salida_val['Min_Salida'].idxmax()
+                
+                salida_min_txt = f"{df_salida_val.loc[idx_min_sal, 'Min_Salida']/60:.1f} hrs (Tren {df_salida_val.loc[idx_min_sal, 'Tren planificado']} - {df_salida_val.loc[idx_min_sal, 'Puerto']})"
+                salida_max_txt = f"{df_salida_val.loc[idx_max_sal, 'Min_Salida']/60:.1f} hrs (Tren {df_salida_val.loc[idx_max_sal, 'Tren planificado']} - {df_salida_val.loc[idx_max_sal, 'Puerto']})"
+            else:
+                salida_min_txt, salida_max_txt = "N/I", "N/I"
 
             # --- ARMAR TEXTO PARA WHATSAPP ---
-            reporte = f"*REPORTE DE OPERACIONES PUERTOS BIOBIO*\n"
+            reporte = f"*REPORTE EJECUTIVO DE OPERACIONES*\n"
             reporte += f"*Fecha:* {fecha_sel}\n\n"
             
             reporte += f"📊 *CONSOLIDADO GENERAL*\n"
             reporte += f"• *Total trenes operados:* {total_trenes} trenes\n"
             reporte += f"• *Cumplimiento llegada:* {pct_llegada:.1f}% ({llegada_si} de {total_trenes} en itinerario)\n"
-            reporte += f"• *Cumplimiento salida:* {pct_salida:.1f}% ({salida_si} de {total_trenes} en itinerario)\n"
+            reporte += f"• *Cumplimiento salida (+0):* {pct_salida:.1f}% ({salida_si} de {total_trenes} en itinerario)\n"
             reporte += f"• *Efectividad de descarga:* {efectividad_descarga:.1f}% ({descargados} descargados / {confirmados} confirmados)\n"
             reporte += f"• *Carros confirmados vs. Retorno:* {confirmados} confirmados / {retornados} retornados (Diferencia: {diferencia:+d} vacíos)\n\n"
             
             reporte += f"⏱️ *INDICADORES DE TIEMPO OPERATIVO*\n"
-            reporte += f"• *Tiempo promedio de postura:* {txt_prom_postura} (Arribo Real a Postura Bodega)\n"
-            reporte += f"• *Tiempo promedio de salida:* {txt_prom_salida} (Término Descarga a Retorno Real)\n\n"
+            reporte += f"• *Tiempo mínimo de postura:* {postura_min_txt}\n"
+            reporte += f"• *Tiempo máximo de postura:* {postura_max_txt}\n"
+            reporte += f"• *Tiempo mínimo de salida:* {salida_min_txt}\n"
+            reporte += f"• *Tiempo máximo de salida:* {salida_max_txt}\n\n"
             
-            # --- PUNTO 3: CONSOLIDADO POR CLIENTE ---
+            # --- CONSOLIDADO POR CLIENTE ---
             reporte += f"🏭 *CONSOLIDADO POR CLIENTE*\n"
             df_cliente = df_f.groupby('Cliente').agg({
                 'Carros confirmados': 'sum',
@@ -124,8 +138,7 @@ if uploaded_file is not None:
                     obs_clean = str(r_obs['Observaciones']).replace('\n', ' ')
                     reporte += f"• *Tren {r_obs['Tren planificado']} ({r_obs['Puerto']}):* {obs_clean}\n"
             
-            # Visualización en pantalla
-            st.success("✅ ¡Reporte ejecutivo generado con éxito!")
+            st.success("✅ ¡Reporte generado con éxito!")
             st.text_area("📋 Copia y pega este reporte en WhatsApp:", reporte, height=450)
             
     except Exception as e:
