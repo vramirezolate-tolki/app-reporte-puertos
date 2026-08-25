@@ -93,7 +93,7 @@ if uploaded_file is not None:
             reporte += f"📊 *CONSOLIDADO GENERAL*\n"
             reporte += f"• *Total trenes operados:* {total_trenes} trenes\n"
             reporte += f"• *Cumplimiento llegada:* {pct_llegada:.1f}% ({llegada_si} de {total_trenes} en itinerario)\n"
-            reporte += f"• *Cumplimiento salida (+0):* {pct_salida:.1f}% ({salida_si} de {total_trenes} en itinerario)\n"
+            reporte += f"• *Cumplimiento salida:* {pct_salida:.1f}% ({salida_si} de {total_trenes} en itinerario)\n"
             reporte += f"• *Efectividad de descarga:* {efectividad_descarga:.1f}% ({descargados} descargados / {confirmados} confirmados)\n"
             reporte += f"• *Carros confirmados vs. Retorno:* {confirmados} confirmados / {retornados} retornados (Diferencia: {diferencia:+d} vacíos)\n\n"
             
