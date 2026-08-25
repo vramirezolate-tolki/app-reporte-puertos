@@ -87,7 +87,7 @@ if uploaded_file is not None:
                 salida_min_txt, salida_max_txt = "N/I", "N/I"
 
             # --- ARMAR TEXTO PARA WHATSAPP ---
-            reporte = f"*REPORTE EJECUTIVO DE OPERACIONES*\n"
+            reporte = f"*REPORTE DE OPERACIONES PUERTOS BIOBIO*\n"
             reporte += f"*Fecha:* {fecha_sel}\n\n"
             
             reporte += f"📊 *CONSOLIDADO GENERAL*\n"
