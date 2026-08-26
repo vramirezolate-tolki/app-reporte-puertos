@@ -220,7 +220,7 @@ if uploaded_file is not None:
             with tab2:
                 st.write("### Infografía generada automáticamente:")
                 img_buf = generar_imagen_infografia(df_f, fecha_sel, postura_min_txt, postura_max_txt, salida_min_txt, salida_max_txt)
-                st.image(img_buf, caption=f"Infografía Operacional {fecha_sel}", use_column_width=True)
+                st.image(img_buf, caption=f"Infografía Operacional {fecha_sel}", use_container_width=True)
                 
                 st.download_button(
                     label="📥 Descargar Imagen PNG",
