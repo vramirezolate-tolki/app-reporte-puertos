@@ -18,8 +18,20 @@ st.subheader("Operaciones Puertos Biobío")
 # 1. Cargar archivo Excel
 uploaded_file = st.file_uploader("Sube el archivo Excel (Resumen descargas)", type=["xlsx"])
 
+def posture_min_clean(txt):
+    return txt.split('(')[0].strip() if '(' in txt else txt
+
+def posture_max_clean(txt):
+    return txt.split('(')[0].strip() if '(' in txt else txt
+
+def salida_min_clean(txt):
+    return txt.split('(')[0].strip() if '(' in txt else txt
+
+def salida_max_clean(txt):
+    return txt.split('(')[0].strip() if '(' in txt else txt
+
 def generar_imagen_infografia(df_f, fecha_sel, postura_min_txt, postura_max_txt, salida_min_txt, salida_max_txt):
-    """Genera una tarjeta gráfica tipo infografía idéntica a la de la muestra."""
+    """Genera una tarjeta gráfica tipo infografía."""
     fig, ax = plt.subplots(figsize=(10, 13), dpi=200)
     fig.patch.set_facecolor('#f4f6f9')
     ax.set_facecolor('#f4f6f9')
@@ -113,12 +125,6 @@ def generar_imagen_infografia(df_f, fecha_sel, postura_min_txt, postura_max_txt,
     plt.close(fig)
     return buf
 
-# Helpers de formato de texto
-def posture_min_clean(txt): return txt.split('(')[0].strip() if '(' in txt else txt
-def posture_max_clean(txt): return txt.split('(')[0].strip() if '(' in txt else txt
-def salida_min_clean(txt): return txt.split('(')[0].strip() if '(' in txt else txt
-def salida_max_clean(txt): return txt.split('(')[0].strip() if '(' in txt else txt
-
 if uploaded_file is not None:
     try:
         df = pd.read_excel(uploaded_file, sheet_name='BD_Puerto')
@@ -150,7 +156,8 @@ if uploaded_file is not None:
             df_f['DT_Retorno_Real'] = pd.to_datetime(df_f['Fecha Hora Retorno Real'])
             
             def calc_min_diff(end, start):
-                if pd.isna(end) or pd.isna(start): return np.nan
+                if pd.isna(end) or pd.isna(start):
+                    return np.nan
                 diff = (end - start).total_seconds() / 60.0
                 return diff + 1440.0 if diff < 0 else diff
 
@@ -215,7 +222,6 @@ if uploaded_file is not None:
                 img_buf = generar_imagen_infografia(df_f, fecha_sel, postura_min_txt, postura_max_txt, salida_min_txt, salida_max_txt)
                 st.image(img_buf, caption=f"Infografía Operacional {fecha_sel}", use_column_width=True)
                 
-                # Botón de Descarga de Imagen
                 st.download_button(
                     label="📥 Descargar Imagen PNG",
                     data=img_buf,
@@ -225,7 +231,3 @@ if uploaded_file is not None:
 
     except Exception as e:
         st.error(f"Error al procesar el archivo: {e}")
-            st.text_area("📋 Copia y pega este reporte en WhatsApp:", reporte, height=450)
-            
-    except Exception as e:
-        st.error(f"Error procesando la estructura del archivo: {e}")
