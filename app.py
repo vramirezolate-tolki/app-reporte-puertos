@@ -222,7 +222,7 @@ if uploaded_file is not None:
             if carros_pendientes_total > 0:
                 reporte += f"📌 *Carros con datos pendientes:* {carros_pendientes_total} carros ({len(df_pendientes)} tren(es) con información de salida pendiente)\n"
                 reporte += f"• *Cumplimiento llegada:* {pct_llegada:.1f}%\n"
-                reporte += f"• *Cumplimiento salida (+0):* {pct_salida:.1f}% (calculado sobre {total_completos} trenes finalizados)\n"
+                reporte += f"• *Cumplimiento salida:* {pct_salida:.1f}% (calculado sobre {total_completos} trenes finalizados)\n"
             else:
                 reporte += f"• *Cumplimiento llegada:* {pct_llegada:.1f}%\n"
                 reporte += f"• *Cumplimiento salida (+0):* {pct_salida:.1f}%\n"
