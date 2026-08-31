@@ -225,7 +225,7 @@ if uploaded_file is not None:
                 reporte += f"• *Cumplimiento salida:* {pct_salida:.1f}% (calculado sobre {total_completos} trenes finalizados)\n"
             else:
                 reporte += f"• *Cumplimiento llegada:* {pct_llegada:.1f}%\n"
-                reporte += f"• *Cumplimiento salida (+0):* {pct_salida:.1f}%\n"
+                reporte += f"• *Cumplimiento salida:* {pct_salida:.1f}%\n"
                 
             reporte += f"• *Efectividad de descarga:* {efectividad_descarga:.1f}%\n• *Carros confirmados vs. Retorno:* {confirmados} / {retornados} (Dif: {diferencia:+d})\n\n"
             
